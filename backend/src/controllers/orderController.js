@@ -1,41 +1,39 @@
-import { query } from '../config/database.js'
+import pool, { query } from '../config/database.js'
 
 export const createOrder = async (req, res, next) => {
+  const client = await pool.connect()
   try {
+    await client.query('BEGIN')
     const { items, total, delivery_address, phone } = req.body
     const userId = req.user.id
 
-    const client = await query('BEGIN')
-    
-    try {
-      const orderResult = await query(
-        `INSERT INTO orders (user_id, total, delivery_address, phone, status)
-         VALUES ($1, $2, $3, $4, 'pending') RETURNING id`,
-        [userId, total, delivery_address, phone]
+    const orderResult = await client.query(
+      `INSERT INTO orders (user_id, total, delivery_address, phone, status)
+       VALUES ($1, $2, $3, $4, 'pending') RETURNING id`,
+      [userId, total, delivery_address, phone]
+    )
+    const orderId = orderResult.rows[0].id
+
+    for (const item of items) {
+      await client.query(
+        `INSERT INTO order_items (order_id, product_id, quantity, price)
+         VALUES ($1, $2, $3, $4)`,
+        [orderId, item.product_id, item.quantity, item.price]
       )
-      const orderId = orderResult.rows[0].id
-
-      for (const item of items) {
-        await query(
-          `INSERT INTO order_items (order_id, product_id, quantity, price)
-           VALUES ($1, $2, $3, $4)`,
-          [orderId, item.product_id, item.quantity, item.price]
-        )
-        
-        await query(
-          'UPDATE products SET stock = stock - $1 WHERE id = $2',
-          [item.quantity, item.product_id]
-        )
-      }
-
-      await query('COMMIT')
-      res.status(201).json({ id: orderId, message: 'Заказ создан' })
-    } catch (err) {
-      await query('ROLLBACK')
-      throw err
+      
+      await client.query(
+        'UPDATE products SET stock = stock - $1 WHERE id = $2',
+        [item.quantity, item.product_id]
+      )
     }
+
+    await client.query('COMMIT')
+    res.status(201).json({ id: orderId, message: 'Заказ создан' })
   } catch (err) {
+    await client.query('ROLLBACK')
     next(err)
+  } finally {
+    client.release()
   }
 }
 
@@ -51,7 +49,7 @@ export const getOrders = async (req, res, next) => {
             'quantity', oi.quantity,
             'price', oi.price,
             'product_name', p.name
-          )) as items
+          ) FILTER (WHERE oi.id IS NOT NULL)) as items
         FROM orders o
         JOIN users u ON o.user_id = u.id
         LEFT JOIN order_items oi ON o.id = oi.order_id
@@ -68,7 +66,7 @@ export const getOrders = async (req, res, next) => {
             'quantity', oi.quantity,
             'price', oi.price,
             'product_name', p.name
-          )) as items
+          ) FILTER (WHERE oi.id IS NOT NULL)) as items
         FROM orders o
         LEFT JOIN order_items oi ON o.id = oi.order_id
         LEFT JOIN products p ON oi.product_id = p.id
