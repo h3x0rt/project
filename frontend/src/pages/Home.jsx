@@ -19,7 +19,7 @@ function Home() {
         borderBottom: '1px solid var(--color-border)'
       }}>
         <div className="container">
-          <h1 style={{ fontSize: '42px', fontWeight: 700, marginBottom: '16px' }}>
+          <h1 style={{ fontSize: '42px', fontWeight: 700, marginBottom: '16px', color: 'var(--color-accent)'}}>
             Юг Белора Металл
           </h1>
           <p style={{ fontSize: '18px', color: 'var(--color-text-secondary)', maxWidth: '600px', margin: '0 auto 32px' }}>
