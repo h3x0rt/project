@@ -10,6 +10,7 @@ import productRoutes from './routes/products.js'
 import orderRoutes from './routes/orders.js'
 import rentRoutes from './routes/rent.js'
 import contactRoutes from './routes/contacts.js'
+import { query } from './config/database.js'
 import errorHandler from './middleware/errorHandler.js'
 
 dotenv.config()
@@ -31,12 +32,38 @@ app.use('/api/orders', orderRoutes)
 app.use('/api/rent', rentRoutes)
 app.use('/api/contacts', contactRoutes)
 
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() })
+app.get('/api/health', async (req, res, next) => {
+  try {
+    await query('SELECT 1')
+    res.json({
+      status: 'ok',
+      database: 'ok',
+      timestamp: new Date().toISOString(),
+    })
+  } catch (err) {
+    err.status = 503
+    next(err)
+  }
+})
+
+app.use((req, res) => {
+  res.status(404).json({ message: 'Маршрут не найден' })
 })
 
 app.use(errorHandler)
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 Сервер запущен на порту ${PORT}`)
 })
+
+const shutdown = signal => {
+  console.log(`Получен ${signal}. Завершение работы...`)
+
+  server.close(() => {
+    console.log('HTTP-сервер остановлен')
+    process.exit(0)
+  })
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'))
+process.on('SIGINT', () => shutdown('SIGINT'))
