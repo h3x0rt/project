@@ -10,7 +10,11 @@ router.post('/register', [
   body('email').isEmail().normalizeEmail().withMessage('Введите корректный email'),
   body('password').isLength({ min: 6 }).withMessage('Пароль минимум 6 символов'),
   body('name').trim().notEmpty().withMessage('Имя обязательно'),
-  body('phone').optional().trim()
+  body('phone')
+    .trim()
+    .notEmpty().withMessage('Телефон обязателен')
+    .matches(/^8 \(\d{3}\) \d{3}-\d{2}-\d{2}$/)
+    .withMessage('Телефон в формате: 8 (918) 999-99-99')
 ], register)
 
 // Вход

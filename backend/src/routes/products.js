@@ -17,7 +17,7 @@ router.get('/:id', getProductById)
 
 // Админские эндпоинты (с загрузкой изображения)
 router.post('/', authenticate, requireAdmin, uploadProductImage, handleUploadError, createProduct)
-router.put('/:id', authenticate, requireAdmin, updateProduct)
+router.put('/:id', authenticate, requireAdmin, uploadProductImage, handleUploadError, updateProduct)
 router.delete('/:id', authenticate, requireAdmin, deleteProduct)
 
 export default router

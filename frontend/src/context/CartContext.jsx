@@ -1,29 +1,69 @@
 import { createContext, useState, useContext, useEffect } from 'react'
+import { useAuth } from './AuthContext'
 
 const CartContext = createContext()
 
+function cartStorageKey(userId) {
+  return `cart_user_${userId}`
+}
+
 export default function CartProvider({ children }) {
-  const [cart, setCart] = useState(() => {
-    const saved = localStorage.getItem('cart')
-    return saved ? JSON.parse(saved) : []
-  })
+  const { user } = useAuth()
+  const userId = user?.id ?? null
+  const [cart, setCart] = useState([])
+  const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart))
-  }, [cart])
+    // Убираем старую общую корзину без привязки к аккаунту
+    localStorage.removeItem('cart')
+
+    if (!userId) {
+      setCart([])
+      setReady(false)
+      return
+    }
+
+    setReady(false)
+    try {
+      const saved = localStorage.getItem(cartStorageKey(userId))
+      setCart(saved ? JSON.parse(saved) : [])
+    } catch {
+      setCart([])
+    }
+    setReady(true)
+  }, [userId])
+
+  useEffect(() => {
+    if (!userId || !ready) return
+    localStorage.setItem(cartStorageKey(userId), JSON.stringify(cart))
+  }, [cart, userId, ready])
+
+  const clampToStock = (desired, stock) => {
+    if (stock === undefined || stock === null) return desired
+    const max = Math.max(0, Number(stock))
+    return Math.min(desired, max)
+  }
 
   const addToCart = (product, quantity = 1) => {
+    if (!userId) return false
+
     setCart(prev => {
       const existing = prev.find(item => item.id === product.id)
+      const stock = product.stock ?? existing?.stock
       if (existing) {
+        const nextQty = clampToStock(existing.quantity + quantity, stock)
+        if (nextQty < 1) return prev.filter(item => item.id !== product.id)
         return prev.map(item =>
           item.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
+            ? { ...item, quantity: nextQty, stock }
             : item
         )
       }
-      return [...prev, { ...product, quantity }]
+      const nextQty = clampToStock(quantity, stock)
+      if (nextQty < 1) return prev
+      return [...prev, { ...product, quantity: nextQty }]
     })
+    return true
   }
 
   const removeFromCart = (productId) => {
@@ -31,14 +71,16 @@ export default function CartProvider({ children }) {
   }
 
   const updateQuantity = (productId, quantity) => {
-    if (quantity < 1) {
+    const qty = Number(quantity)
+    if (!Number.isFinite(qty) || qty < 1) {
       removeFromCart(productId)
       return
     }
     setCart(prev =>
-      prev.map(item =>
-        item.id === productId ? { ...item, quantity } : item
-      )
+      prev.map(item => {
+        if (item.id !== productId) return item
+        return { ...item, quantity: clampToStock(Math.floor(qty), item.stock) }
+      })
     )
   }
 
@@ -49,7 +91,14 @@ export default function CartProvider({ children }) {
 
   return (
     <CartContext.Provider value={{
-      cart, addToCart, removeFromCart, updateQuantity, clearCart, totalItems, totalPrice
+      cart,
+      addToCart,
+      removeFromCart,
+      updateQuantity,
+      clearCart,
+      totalItems,
+      totalPrice,
+      isCartReady: ready
     }}>
       {children}
     </CartContext.Provider>

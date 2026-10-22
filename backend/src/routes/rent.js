@@ -5,12 +5,25 @@ import { uploadRentImage, handleUploadError } from '../middleware/upload.js'
 
 const router = Router()
 
-// Получить всё оборудование для аренды
+// Получить всё оборудование для аренды (публично — только доступное)
 router.get('/equipment', async (req, res, next) => {
   try {
     const { query } = await import('../config/database.js')
     const result = await query(
       'SELECT * FROM rent_equipment WHERE is_available = true ORDER BY name'
+    )
+    res.json(result.rows)
+  } catch (err) {
+    next(err)
+  }
+})
+
+// Админ: всё оборудование (включая недоступное)
+router.get('/admin/equipment', authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    const { query } = await import('../config/database.js')
+    const result = await query(
+      'SELECT * FROM rent_equipment ORDER BY name'
     )
     res.json(result.rows)
   } catch (err) {
@@ -140,15 +153,58 @@ router.patch('/admin/requests/:id/status', authenticate, requireAdmin, async (re
 router.post('/equipment', authenticate, requireAdmin, uploadRentImage, handleUploadError, async (req, res, next) => {
   try {
     const { query } = await import('../config/database.js')
-    const { name, description, price_per_day, deposit } = req.body
+    const { name, description, price_per_day, deposit, is_available } = req.body
     const image_url = req.file ? `/uploads/rent/${req.file.filename}` : null
+    const available = is_available === undefined || is_available === '' || is_available === 'true' || is_available === true
+
+    if (!name || price_per_day === undefined || price_per_day === '') {
+      return res.status(400).json({ message: 'Укажите название и цену за день' })
+    }
 
     const result = await query(
-      `INSERT INTO rent_equipment (name, description, price_per_day, deposit, image_url)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [name, description, price_per_day, deposit || 0, image_url]
+      `INSERT INTO rent_equipment (name, description, price_per_day, deposit, image_url, is_available)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [name, description || null, price_per_day, deposit || 0, image_url, available]
     )
     res.status(201).json(result.rows[0])
+  } catch (err) {
+    next(err)
+  }
+})
+
+// Админ: обновить оборудование
+router.put('/equipment/:id', authenticate, requireAdmin, uploadRentImage, handleUploadError, async (req, res, next) => {
+  try {
+    const { query } = await import('../config/database.js')
+    const { name, description, price_per_day, deposit, is_available } = req.body
+
+    const existing = await query('SELECT * FROM rent_equipment WHERE id = $1', [req.params.id])
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ message: 'Оборудование не найдено' })
+    }
+
+    const current = existing.rows[0]
+    const image_url = req.file
+      ? `/uploads/rent/${req.file.filename}`
+      : current.image_url
+    const available = is_available === undefined || is_available === ''
+      ? current.is_available
+      : (is_available === 'true' || is_available === true)
+
+    const result = await query(
+      `UPDATE rent_equipment SET name=$1, description=$2, price_per_day=$3,
+       deposit=$4, image_url=$5, is_available=$6 WHERE id=$7 RETURNING *`,
+      [
+        name ?? current.name,
+        description !== undefined ? description : current.description,
+        price_per_day ?? current.price_per_day,
+        deposit ?? current.deposit,
+        image_url,
+        available,
+        req.params.id
+      ]
+    )
+    res.json(result.rows[0])
   } catch (err) {
     next(err)
   }
@@ -158,7 +214,10 @@ router.post('/equipment', authenticate, requireAdmin, uploadRentImage, handleUpl
 router.delete('/equipment/:id', authenticate, requireAdmin, async (req, res, next) => {
   try {
     const { query } = await import('../config/database.js')
-    await query('DELETE FROM rent_equipment WHERE id = $1', [req.params.id])
+    const result = await query('DELETE FROM rent_equipment WHERE id = $1 RETURNING id', [req.params.id])
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Оборудование не найдено' })
+    }
     res.json({ message: 'Оборудование удалено' })
   } catch (err) {
     next(err)

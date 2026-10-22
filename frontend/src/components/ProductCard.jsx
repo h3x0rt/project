@@ -1,8 +1,19 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
+import { useAuth } from '../context/AuthContext'
 
 function ProductCard({ product }) {
   const { addToCart } = useCart()
+  const { user } = useAuth()
+  const navigate = useNavigate()
+
+  const handleAdd = () => {
+    if (!user) {
+      navigate('/login')
+      return
+    }
+    addToCart(product)
+  }
 
   return (
     <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -40,8 +51,8 @@ function ProductCard({ product }) {
             /{product.unit}
           </span>
         </span>
-        <button 
-          onClick={() => addToCart(product)}
+        <button
+          onClick={handleAdd}
           className="btn btn-primary"
           style={{ padding: '8px 16px', fontSize: '13px' }}
         >

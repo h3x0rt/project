@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { useCart } from '../context/CartContext'
+import { useAuth } from '../context/AuthContext'
 import api from '../api/axios'
 
 function ProductDetail() {
@@ -8,7 +9,17 @@ function ProductDetail() {
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const { addToCart } = useCart()
+  const { user } = useAuth()
   const navigate = useNavigate()
+
+  const handleAdd = (goToCart = false) => {
+    if (!user) {
+      navigate('/login')
+      return
+    }
+    addToCart(product)
+    if (goToCart) navigate('/cart')
+  }
 
   useEffect(() => {
     api.get(`/products/${id}`)
@@ -51,10 +62,10 @@ function ProductDetail() {
             <span style={{ fontSize: '16px', color: 'var(--color-text-muted)', fontWeight: 400 }}>/{product.unit}</span>
           </div>
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-            <button onClick={() => { addToCart(product); navigate('/cart') }} className="btn btn-primary" style={{ padding: '14px 32px' }}>
+            <button onClick={() => handleAdd(true)} className="btn btn-primary" style={{ padding: '14px 32px' }}>
               В корзину
             </button>
-            <button onClick={() => addToCart(product)} className="btn btn-secondary" style={{ padding: '14px 32px' }}>
+            <button onClick={() => handleAdd(false)} className="btn btn-secondary" style={{ padding: '14px 32px' }}>
               Добавить и продолжить
             </button>
           </div>

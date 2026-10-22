@@ -2,11 +2,20 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { query } from '../config/database.js'
 
+const PHONE_REGEX = /^8 \(\d{3}\) \d{3}-\d{2}-\d{2}$/
+
 export const register = async (req, res, next) => {
   try {
     const { email, password, name, phone } = req.body
+
+    if (!phone || !PHONE_REGEX.test(String(phone).trim())) {
+      return res.status(400).json({
+        message: 'Некорректный номер телефона. Формат: 8 (918) 999-99-99'
+      })
+    }
+
     const existing = await query('SELECT id FROM users WHERE email = $1', [email])
-    
+
     if (existing.rows.length > 0) {
       return res.status(400).json({ message: 'Пользователь уже существует' })
     }
@@ -14,8 +23,8 @@ export const register = async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(password, 12)
     const result = await query(
       `INSERT INTO users (email, password_hash, name, phone, role) 
-       VALUES ($1, $2, $3, $4, 'client') RETURNING id, email, name, role`,
-      [email, hashedPassword, name, phone]
+       VALUES ($1, $2, $3, $4, 'client') RETURNING id, email, name, phone, role`,
+      [email, hashedPassword, name, String(phone).trim()]
     )
 
     const user = result.rows[0]
@@ -35,7 +44,7 @@ export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body
     const result = await query(
-      'SELECT id, email, name, password_hash, role FROM users WHERE email = $1',
+      'SELECT id, email, name, phone, password_hash, role FROM users WHERE email = $1',
       [email]
     )
 
@@ -57,7 +66,13 @@ export const login = async (req, res, next) => {
 
     res.json({
       token,
-      user: { id: user.id, email: user.email, name: user.name, role: user.role }
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        phone: user.phone,
+        role: user.role
+      }
     })
   } catch (err) {
     next(err)
