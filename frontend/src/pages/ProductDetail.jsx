@@ -32,8 +32,8 @@ function ProductDetail() {
   if (!product) return <div className="container" style={{ paddingTop: '60px' }}>Товар не найден</div>
 
   return (
-    <div className="container" style={{ paddingTop: '40px', paddingBottom: '60px', maxWidth: '900px' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px' }}>
+    <div className="container product-detail">
+      <div className="product-detail__grid">
         <div style={{
           aspectRatio: '4/3',
           backgroundColor: 'var(--color-surface-raised)',
@@ -53,15 +53,15 @@ function ProductDetail() {
           <div style={{ fontSize: '12px', color: 'var(--color-accent)', textTransform: 'uppercase', fontWeight: 500, marginBottom: '8px' }}>
             {product.category}
           </div>
-          <h1 style={{ fontSize: '28px', fontWeight: 600, marginBottom: '16px' }}>{product.name}</h1>
+          <h1 className="product-detail__title">{product.name}</h1>
           <p style={{ color: 'var(--color-text-secondary)', marginBottom: '24px', lineHeight: 1.6 }}>
             {product.description}
           </p>
-          <div style={{ fontSize: '32px', fontWeight: 700, marginBottom: '24px' }}>
+          <div className="product-detail__price">
             {product.price.toLocaleString('ru-RU')} ₽
             <span style={{ fontSize: '16px', color: 'var(--color-text-muted)', fontWeight: 400 }}>/{product.unit}</span>
           </div>
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          <div className="product-detail__actions">
             <button onClick={() => handleAdd(true)} className="btn btn-primary" style={{ padding: '14px 32px' }}>
               В корзину
             </button>

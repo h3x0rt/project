@@ -2,6 +2,20 @@
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.nav-link {
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color var(--transition-fast);
+}
+
+.nav-link:hover {
+  color: var(--color-text);
 }
 
 .btn {
@@ -17,6 +31,12 @@
   border: none;
   transition: all var(--transition-fast);
   text-decoration: none;
+  font-family: inherit;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn-primary {
@@ -24,7 +44,7 @@
   color: white;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background-color: var(--color-accent-hover);
 }
 
@@ -34,7 +54,7 @@
   border: 1px solid var(--color-border);
 }
 
-.btn-secondary:hover {
+.btn-secondary:hover:not(:disabled) {
   border-color: var(--color-border-hover);
   background-color: var(--color-surface-hover);
 }
@@ -45,7 +65,7 @@
   border: 1px solid var(--color-border);
 }
 
-.btn-outline:hover {
+.btn-outline:hover:not(:disabled) {
   border-color: var(--color-accent);
   color: var(--color-accent);
 }
@@ -71,6 +91,8 @@
   color: var(--color-text);
   font-size: 14px;
   transition: border-color var(--transition-fast);
+  font-family: inherit;
+  box-sizing: border-box;
 }
 
 .input:focus {
@@ -95,15 +117,280 @@
   gap: 20px;
 }
 
+/* Home */
+.home-hero {
+  background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-surface-raised) 100%);
+  padding: 80px 0;
+  text-align: center;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.home-hero__title {
+  font-size: clamp(28px, 6vw, 42px);
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--color-accent);
+  line-height: 1.15;
+}
+
+.home-hero__text {
+  font-size: clamp(15px, 2.5vw, 18px);
+  color: var(--color-text-secondary);
+  max-width: 600px;
+  margin: 0 auto 32px;
+  line-height: 1.5;
+}
+
+.home-section {
+  padding-top: 60px;
+  padding-bottom: 60px;
+}
+
+.home-section__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 12px;
+}
+
+/* Product card */
+.product-card__footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Product detail */
+.product-detail {
+  padding-top: 40px;
+  padding-bottom: 60px;
+  max-width: 900px;
+}
+
+.product-detail__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 40px;
+}
+
+.product-detail__title {
+  font-size: clamp(22px, 4vw, 28px);
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.product-detail__price {
+  font-size: clamp(24px, 5vw, 32px);
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+.product-detail__actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Cart */
+.cart-page {
+  padding-top: 40px;
+  padding-bottom: 60px;
+  max-width: 800px;
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.cart-item__thumb {
+  width: 80px;
+  height: 80px;
+  background-color: var(--color-surface-raised);
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.cart-item__info {
+  flex: 1;
+  min-width: 140px;
+}
+
+.cart-item__qty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cart-item__sum {
+  min-width: 100px;
+  text-align: right;
+  font-weight: 600;
+}
+
+.cart-checkout {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+
+/* Category chips scroll on mobile */
+.category-chips {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+  .home-hero {
+    padding: 56px 0;
+  }
+
+  .home-section {
+    padding-top: 40px;
+    padding-bottom: 40px;
+  }
+
+  .product-detail__grid {
+    gap: 24px;
+  }
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 0 16px;
   }
+
   .grid-products {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr));
     gap: 12px;
   }
+
   .section-title {
     font-size: 22px;
+    margin-bottom: 18px;
+  }
+
+  .card {
+    padding: 14px;
+  }
+
+  .category-chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin-left: -16px;
+    margin-right: -16px;
+    padding: 0 16px 4px;
+    margin-bottom: 24px;
+  }
+
+  .category-chips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .category-chips .btn {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .product-card__footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .product-card__footer .btn {
+    width: 100%;
+  }
+
+  .product-detail__actions .btn {
+    flex: 1 1 100%;
+  }
+
+  .cart-item {
+    display: grid;
+    grid-template-columns: 64px 1fr auto;
+    grid-template-areas:
+      "thumb info remove"
+      "qty qty qty"
+      "sum sum sum";
+    gap: 10px 12px;
+    align-items: start;
+  }
+
+  .cart-item__thumb {
+    grid-area: thumb;
+    width: 64px;
+    height: 64px;
+  }
+
+  .cart-item__info {
+    grid-area: info;
+    min-width: 0;
+  }
+
+  .cart-item__qty {
+    grid-area: qty;
+    justify-content: flex-start;
+  }
+
+  .cart-item__sum {
+    grid-area: sum;
+    min-width: 0;
+    text-align: left;
+  }
+
+  .cart-item__remove {
+    grid-area: remove;
+  }
+
+  .cart-checkout {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cart-checkout .btn {
+    width: 100%;
+  }
+
+  .home-section__head {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid-products {
+    grid-template-columns: 1fr;
+  }
+
+  .input,
+  .input[type='number'],
+  .input[type='tel'],
+  .input[type='email'],
+  .input[type='password'],
+  select.input,
+  textarea.input {
+    font-size: 16px; /* без автозума iOS */
+  }
+
+  .product-card__desc {
+    display: none;
   }
 }

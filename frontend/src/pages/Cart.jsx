@@ -88,31 +88,22 @@ function Cart() {
   }
 
   return (
-    <div className="container" style={{ paddingTop: '40px', paddingBottom: '60px', maxWidth: '800px' }}>
+    <div className="container cart-page">
       <h1 className="section-title">Корзина</h1>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
         {cart.map(item => {
           const atMax = item.stock !== undefined && item.stock !== null && item.quantity >= item.stock
           return (
-            <div key={item.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-              <div style={{
-                width: '80px',
-                height: '80px',
-                backgroundColor: 'var(--color-surface-raised)',
-                borderRadius: 'var(--radius-md)',
-                flexShrink: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
+            <div key={item.id} className="card cart-item">
+              <div className="cart-item__thumb">
                 {item.image_url ? (
-                  <img src={item.image_url} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'var(--radius-md)' }} />
+                  <img src={item.image_url} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
                   <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Нет фото</span>
                 )}
               </div>
-              <div style={{ flex: 1, minWidth: '140px' }}>
+              <div className="cart-item__info">
                 <h4 style={{ fontSize: '15px', fontWeight: 500, marginBottom: '4px' }}>{item.name}</h4>
                 <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>
                   {item.price.toLocaleString('ru-RU')} ₽/{item.unit}
@@ -121,7 +112,7 @@ function Cart() {
                   )}
                 </p>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div className="cart-item__qty">
                 <button
                   onClick={() => updateQuantity(item.id, item.quantity - 1)}
                   className="btn btn-secondary"
@@ -157,10 +148,11 @@ function Cart() {
                   title={atMax ? 'Больше нет в наличии' : undefined}
                 >+</button>
               </div>
-              <div style={{ minWidth: '100px', textAlign: 'right', fontWeight: 600 }}>
+              <div className="cart-item__sum">
                 {(item.price * item.quantity).toLocaleString('ru-RU')} ₽
               </div>
               <button
+                className="cart-item__remove"
                 onClick={() => removeFromCart(item.id)}
                 style={{
                   background: 'none',
@@ -215,15 +207,7 @@ function Cart() {
         </div>
       )}
 
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '20px',
-        backgroundColor: 'var(--color-surface)',
-        borderRadius: 'var(--radius-lg)',
-        border: '1px solid var(--color-border)'
-      }}>
+      <div className="cart-checkout">
         <div>
           <div style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Итого:</div>
           <div style={{ fontSize: '24px', fontWeight: 600 }}>{totalPrice.toLocaleString('ru-RU')} ₽</div>

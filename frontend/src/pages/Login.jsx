@@ -42,7 +42,7 @@ function Login() {
   }
 
   return (
-    <div className="container" style={{ maxWidth: '420px', paddingTop: '80px' }}>
+    <div className="container" style={{ maxWidth: '420px', paddingTop: 'clamp(40px, 10vw, 80px)', paddingBottom: '40px' }}>
       <h1 className="section-title" style={{ textAlign: 'center' }}>
         {isRegister ? 'Регистрация' : 'Вход'}
       </h1>

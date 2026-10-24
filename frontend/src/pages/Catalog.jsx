@@ -41,12 +41,7 @@ function Catalog() {
     <div className="container" style={{ paddingTop: '40px', paddingBottom: '60px' }}>
       <h1 className="section-title">Каталог</h1>
       
-      <div style={{ 
-        display: 'flex', 
-        gap: '8px', 
-        marginBottom: '32px',
-        flexWrap: 'wrap'
-      }}>
+      <div className="category-chips">
         {CATEGORIES.map(cat => (
           <button
             key={cat.id}

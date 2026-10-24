@@ -40,11 +40,11 @@ function ProductCard({ product }) {
         <h3 style={{ fontSize: '16px', fontWeight: 500, marginBottom: '8px', lineHeight: 1.3 }}>
           {product.name}
         </h3>
-        <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginBottom: '12px', lineHeight: 1.4 }}>
+        <p className="product-card__desc" style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginBottom: '12px', lineHeight: 1.4 }}>
           {product.description?.substring(0, 80)}...
         </p>
       </Link>
-      <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+      <div className="product-card__footer">
         <span style={{ fontSize: '18px', fontWeight: 600 }}>
           {product.price.toLocaleString('ru-RU')} ₽
           <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: 400, marginLeft: '4px' }}>
