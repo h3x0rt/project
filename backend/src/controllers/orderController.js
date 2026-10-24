@@ -119,6 +119,40 @@ export const createOrder = async (req, res, next) => {
   }
 }
 
+const ordersWithItemsSql = (whereClause) => `
+  SELECT o.*,
+    COALESCE(
+      json_agg(
+        json_build_object(
+          'product_id', oi.product_id,
+          'quantity', oi.quantity,
+          'price', oi.price,
+          'product_name', p.name
+        )
+      ) FILTER (WHERE oi.id IS NOT NULL),
+      '[]'::json
+    ) as items
+  FROM orders o
+  LEFT JOIN order_items oi ON o.id = oi.order_id
+  LEFT JOIN products p ON oi.product_id = p.id
+  ${whereClause}
+  GROUP BY o.id
+  ORDER BY o.created_at DESC
+`
+
+/** Заказы текущего пользователя (для профиля) */
+export const getMyOrders = async (req, res, next) => {
+  try {
+    const result = await query(
+      ordersWithItemsSql('WHERE o.user_id = $1'),
+      [req.user.id]
+    )
+    res.json(result.rows)
+  } catch (err) {
+    next(err)
+  }
+}
+
 export const getOrders = async (req, res, next) => {
   try {
     let sql, params
@@ -146,26 +180,7 @@ export const getOrders = async (req, res, next) => {
       `
       params = []
     } else {
-      sql = `
-        SELECT o.*,
-          COALESCE(
-            json_agg(
-              json_build_object(
-                'product_id', oi.product_id,
-                'quantity', oi.quantity,
-                'price', oi.price,
-                'product_name', p.name
-              )
-            ) FILTER (WHERE oi.id IS NOT NULL),
-            '[]'::json
-          ) as items
-        FROM orders o
-        LEFT JOIN order_items oi ON o.id = oi.order_id
-        LEFT JOIN products p ON oi.product_id = p.id
-        WHERE o.user_id = $1
-        GROUP BY o.id
-        ORDER BY o.created_at DESC
-      `
+      sql = ordersWithItemsSql('WHERE o.user_id = $1')
       params = [req.user.id]
     }
 

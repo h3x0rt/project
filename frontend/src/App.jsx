@@ -9,6 +9,7 @@ import Cart from './pages/Cart'
 import Contacts from './pages/Contacts'
 import Rent from './pages/Rent'
 import Login from './pages/Login'
+import Profile from './pages/Profile'
 import AdminDashboard from './pages/AdminDashboard'
 
 function App() {
@@ -29,6 +30,11 @@ function App() {
           <Route path="/contacts" element={<Contacts />} />
           <Route path="/rent" element={<Rent />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          } />
           <Route path="/admin/*" element={
             <ProtectedRoute adminOnly>
               <AdminDashboard />

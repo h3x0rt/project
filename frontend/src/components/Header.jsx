@@ -82,9 +82,13 @@ function Header() {
 
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ fontSize: '14px', color: 'var(--color-text-secondary)' }}>
+              <Link
+                to="/profile"
+                className="nav-link"
+                style={{ fontSize: '14px' }}
+              >
                 {user.name}
-              </span>
+              </Link>
               <button onClick={() => { logout(); navigate('/') }} className="btn btn-secondary" style={{ padding: '8px 16px', fontSize: '13px' }}>
                 Выйти
               </button>
